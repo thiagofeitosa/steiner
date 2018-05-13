@@ -71,8 +71,8 @@ int steiner(void){
     printf("\n\n");
   }
 
-  //calculo das distancias euclideanas de todos os pontos
-  cont=1;
+  //calculo das distancias euclideanas de todos os pontos fixos para steiner
+  cont=0;
   for (i=1; i<=numPontos; i++) {
     for (j=1; j<=numSteiner; j++) {
       distancia=0;
@@ -80,7 +80,22 @@ int steiner(void){
          distancia=distancia+pow(coordenadaFixo[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      printf("distancia euclideana entre pt fixo %i para pt Steiner %i equivale a: %f\n", i,j+numPontos,distancia);
+      printf("pt fixo %i para pt Steiner %i equivale a: %f\n", i,j+numPontos,distancia);
+      distancias[cont]=distancia;
+      cont++;
+    }
+  }
+
+  //calculo das distancias euclideanas de todos os pontos de steiner entre si
+  cont=0;
+  for (i=1; i<numSteiner; i++) {
+    for (j=i+1; j<=numSteiner; j++) {
+      distancia=0;
+      for (k=1; k<=numDim; k++) {
+         distancia=distancia+pow(coordenadaSteiner[i][k]-coordenadaSteiner[j][k],2);
+      }
+      distancia=sqrt(distancia);
+      printf("pt steiner %i para pt Steiner %i equivale a: %f\n", i+numPontos,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
     }
@@ -121,7 +136,7 @@ int steiner(void){
 
   //criações das variáveis das ligações de pontos fixos para Steiner com distancias
   printf("\nFuncao Objetivo: ");
-  cont=1;
+  cont=0;
   for (i = 1; i <= numPontos; i++) {
     for (j = 1; j <= numSteiner; j++) {
       strcpy(var,"x");
@@ -134,7 +149,7 @@ int steiner(void){
       glp_set_col_kind(lpst, i,GLP_BV);
       glp_set_col_name(lpst, i, var);
       glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%lf %s",distancias[cont],var);
+      printf("%s%lf ",var,distancias[cont]);
       cont++;
     }
   }
@@ -152,7 +167,7 @@ int steiner(void){
       glp_set_col_kind(lpst, i,GLP_BV);
       glp_set_col_name(lpst, i, var);
       glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%lf %s",distancias[cont],var);
+      printf("%s%lf ",var,distancias[cont]);
       cont++;
       printf("\n");
     }
