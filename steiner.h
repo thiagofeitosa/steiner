@@ -9,7 +9,7 @@
 
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinariaSteiner;
+  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias, numBinariaSteiner;
   float distancia, distancias[100];
   char var[100]; char lixo[50];
 
@@ -138,6 +138,7 @@ int steiner(void){
   //criações das variáveis das ligações de pontos fixos para Steiner com distancias
   printf("\nFuncao Objetivo: ");
   cont=0;
+  numBinarias=0;
   for (i = 1; i <= numPontos; i++) {
     for (j = 1; j <= numSteiner; j++) {
       strcpy(var,"x");
@@ -152,6 +153,7 @@ int steiner(void){
       glp_set_obj_coef(lpst, i, distancias[cont]);
       printf("%s%lf ",var,distancias[cont]);
       cont++;
+      numBinarias++;
     }
   }
 
@@ -172,6 +174,7 @@ int steiner(void){
       printf("%s%lf ",var,distancias[cont]);
       cont++;
       numBinariaSteiner++;
+      numBinarias++;
     }
   }
 
@@ -180,23 +183,31 @@ int steiner(void){
   // int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
   // double ar[19]={0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-  //ainda tá errado esse cálculo na segunda parte
-  int tamVetor = ((numPontos*numSteiner)+((numPontos*numSteiner)+(numBinariaSteiner*2)+(numSteiner/2)));
+  //tamanho do vetor da matriz a seguir
+  int tamVetor = ((numBinarias*2)+1);
   printf("\n\ntamVetor é %d\n\n", tamVetor);
 
-  //vetor ia que representa a linha da matriz quantidade de restrições
-  int ia[]={0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,6,6};
-  // for (i = 0; i <= tamVetor; i++) {
+  //vetor ia que representa a linha da matriz quantidade de restrições >>valores de teste
+  int ia[tamVetor];
+  for (i = 0; i < tamVetor; i++) {
+    if (i==0){
+      ia[i]=i;
+    }else{
+      ia[i]=1;
+    }
+  }
 
-  // }
+  //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações >>valores de teste
+  int ja[tamVetor];
+  for (i = 0; i < tamVetor; i++) {
+    if (i==0){
+      ja[i]=i;
+    }else{
+      ja[i]=1;
+    }
+  }
 
-  //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações
-  int ja[]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
-  // for (i = 0; i <= tamVetor; i++) {
-
-  // }
-
-  //vetor ar que representa o valor dos itens da matriz delimitados acima
+  //vetor ar que representa o valor dos itens da matriz delimitados acima inserindo valores
   double ar[tamVetor];
   for (i = 0; i < tamVetor; i++) {
     if (i==0){
