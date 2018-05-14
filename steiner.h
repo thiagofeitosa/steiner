@@ -9,8 +9,8 @@
 
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias, numBinariaSteiner;
-  float distancia, distancias[100];
+  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias;
+  float distancia, distancias[100], limiteMax, limiteMin;
   char var[100]; char lixo[50];
 
   double Z, x1i5, x1i6, x2i5, x2i6, x3i5, x3i6, x4i5, x4i6, x5i6;
@@ -28,6 +28,16 @@ int steiner(void){
     for ( j=1; j<=numDim; j++ )
     {
       fscanf (file, "%f", &coordenadaFixo[i][j]);
+
+
+      //pra pegar os valores randomicos depois
+      // if ((float)coordenadaFixo<(float)limiteMin)
+      // {
+      //   limiteMin=coordenadaFixo;
+      // }else if ((float)coordenadaFixo>(float)limiteMax)
+      // {
+      //   limiteMax=coordenadaFixo;
+      // }
     }
     fclose(file);
     //impressão de matriz das coordenadas dos pontos fixos
@@ -58,6 +68,10 @@ int steiner(void){
         printf("coordenada z: ");
       }
       scanf ("%f", &coordenadaSteiner[i][j]);
+
+      //pra pegar os valores randomicos depois
+      // coordenadaSteiner[i][j]=limiteMin + rand() % limiteMax;
+      // printf("%f\n", coordenadaSteiner[i][j]);
     }
   }
 
@@ -158,7 +172,6 @@ int steiner(void){
   }
 
   //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
-  numBinariaSteiner=0;
   for (i = 1; i <= numSteiner-1; i++) {
     for (j = i+1; j <= numSteiner; j++) {
       strcpy(var,"x");
@@ -173,7 +186,6 @@ int steiner(void){
       glp_set_obj_coef(lpst, i, distancias[cont]);
       printf("%s%lf ",var,distancias[cont]);
       cont++;
-      numBinariaSteiner++;
       numBinarias++;
     }
   }
@@ -193,7 +205,7 @@ int steiner(void){
     if (i==0){
       ia[i]=i;
     }else{
-      ia[i]=1;
+      ia[i]=1+(rand() % numRestricoes);
     }
   }
 
@@ -203,7 +215,7 @@ int steiner(void){
     if (i==0){
       ja[i]=i;
     }else{
-      ja[i]=1;
+      ja[i]=1+(rand() % numBinarias);
     }
   }
 
