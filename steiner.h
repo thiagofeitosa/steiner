@@ -9,7 +9,7 @@
 
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes;
+  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinariaSteiner;
   float distancia, distancias[100];
   char var[100]; char lixo[50];
 
@@ -71,6 +71,8 @@ int steiner(void){
     printf("\n\n");
   }
 
+
+
   //calculo das distancias euclideanas de todos os pontos fixos para steiner
   cont=0;
   for (i=1; i<=numPontos; i++) {
@@ -80,14 +82,13 @@ int steiner(void){
          distancia=distancia+pow(coordenadaFixo[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      printf("pt fixo %i para pt Steiner %i equivale a: %f\n", i,j+numPontos,distancia);
+      printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
     }
   }
 
   //calculo das distancias euclideanas de todos os pontos de steiner entre si
-  cont=0;
   for (i=1; i<numSteiner; i++) {
     for (j=i+1; j<=numSteiner; j++) {
       distancia=0;
@@ -95,7 +96,7 @@ int steiner(void){
          distancia=distancia+pow(coordenadaSteiner[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      printf("pt steiner %i para pt Steiner %i equivale a: %f\n", i+numPontos,j+numPontos,distancia);
+      printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+numPontos,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
     }
@@ -155,6 +156,7 @@ int steiner(void){
   }
 
   //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
+  numBinariaSteiner=0;
   for (i = 1; i <= numSteiner-1; i++) {
     for (j = i+1; j <= numSteiner; j++) {
       strcpy(var,"x");
@@ -169,17 +171,42 @@ int steiner(void){
       glp_set_obj_coef(lpst, i, distancias[cont]);
       printf("%s%lf ",var,distancias[cont]);
       cont++;
-      printf("\n");
+      numBinariaSteiner++;
     }
   }
 
 //-----------------------------------------------------------------------------
-  //discutir logica sobre criação desses vetores
-  int ia[19]={0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,6,6};
-  int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
-  double ar[19]={0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+  // int ia[19]={0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,6,6};
+  // int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
+  // double ar[19]={0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-  glp_load_matrix(lpst, 18, ia, ja, ar);
+  //ainda tá errado esse cálculo na segunda parte
+  int tamVetor = ((numPontos*numSteiner)+((numPontos*numSteiner)+(numBinariaSteiner*2)+(numSteiner/2)));
+  printf("\n\ntamVetor é %d\n\n", tamVetor);
+
+  //vetor ia que representa a linha da matriz quantidade de restrições
+  int ia[]={0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,6,6};
+  // for (i = 0; i <= tamVetor; i++) {
+
+  // }
+
+  //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações
+  int ja[]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
+  // for (i = 0; i <= tamVetor; i++) {
+
+  // }
+
+  //vetor ar que representa o valor dos itens da matriz delimitados acima
+  double ar[tamVetor];
+  for (i = 0; i < tamVetor; i++) {
+    if (i==0){
+      ar[i]=i;
+    }else{
+      ar[i]=1;
+    }
+  }
+
+  glp_load_matrix(lpst, tamVetor-1, ia, ja, ar);
   glp_simplex(lpst,NULL);
   glp_intopt(lpst,NULL);
 
