@@ -7,6 +7,12 @@
 #include <math.h>
 #include <string.h>
 
+// #define EPS 1e-4
+// #define COMP(x, y) (absf(x - y) <= EPS ? 0 : x < y ? -1 : 1)
+// COMP(7.001, 7) == 1
+// COMP(7.000001, 7) == 0
+// COMP(7, 8) == -1
+
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias;
@@ -28,7 +34,6 @@ int steiner(void){
     for ( j=1; j<=numDim; j++ )
     {
       fscanf (file, "%f", &coordenadaFixo[i][j]);
-
 
       //pra pegar os valores randomicos depois
       // if ((float)coordenadaFixo<(float)limiteMin)
@@ -165,7 +170,7 @@ int steiner(void){
       glp_set_col_kind(lpst, i,GLP_BV);
       glp_set_col_name(lpst, i, var);
       glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%s%lf ",var,distancias[cont]);
+      printf("%lf%s ",distancias[cont],var);
       cont++;
       numBinarias++;
     }
@@ -184,7 +189,7 @@ int steiner(void){
       glp_set_col_kind(lpst, i,GLP_BV);
       glp_set_col_name(lpst, i, var);
       glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%s%lf ",var,distancias[cont]);
+      printf("%lf%s ",distancias[cont],var);
       cont++;
       numBinarias++;
     }
@@ -201,22 +206,68 @@ int steiner(void){
 
   //vetor ia que representa a linha da matriz quantidade de restrições >>valores de teste
   int ia[tamVetor];
-  for (i = 0; i < tamVetor; i++) {
-    if (i==0){
-      ia[i]=i;
+  ia[0]=0;
+  //primeira regra
+  cont=1;
+  int aux=0;
+  for (i = 1; i <= numPontos*numSteiner; i++) {
+    if (aux<numSteiner) {
+      ia[i]=cont;
     }else{
-      ia[i]=1+(rand() % numRestricoes);
+      cont++;
+      ia[i]=cont;
+      aux=0;
     }
+    aux++;
+  }
+  //segunda regra
+  cont=numPontos+1;
+  aux=0;
+  for (i = numPontos*numSteiner+1; i <tamVetor; i++) {
+    if (aux<numPontos+numSteiner-1) {
+      ia[i]=cont;
+    }else{
+      cont++;
+      ia[i]=cont;
+      aux=0;
+    }
+    aux++;
+  }
+  //impressão para testes
+  for( i = 0 ; i < tamVetor; i++)
+  {
+     printf("ia[%d] = %d\n",i, ia[i]);
   }
 
   //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações >>valores de teste
+  // int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
+  // int ja[19]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,4,7,10,13,16,17,2,5,8,11,14,16,18,3,6,9,12,15,17,18};
+
   int ja[tamVetor];
-  for (i = 0; i < tamVetor; i++) {
-    if (i==0){
+  ja[0]=0;
+  //primeira regra
+  for (i = 1; i <= numPontos*numSteiner; i++) {
       ja[i]=i;
-    }else{
-      ja[i]=1+(rand() % numBinarias);
-    }
+  }
+
+  //segunda regra
+  // aux=numSteiner;
+  cont=1;
+  for (i = 0; i < numSteiner; i++) {
+    // for (i = numPontos*numSteiner+1; i <tamVetor; i++) {
+    //   if (cont<numPontos*numSteiner) {
+    //     ja[i]=cont;
+    //     cont=cont+numSteiner;
+    //   }else{
+    //     ja[i]=aux;
+    //     aux=aux+numSteiner;
+    //   }
+    // }
+  }
+
+  for( i = 0 ; i < tamVetor; i++)
+  {
+     printf("ja[%d] = %d\n",i, ja[i]);
   }
 
   //vetor ar que representa o valor dos itens da matriz delimitados acima inserindo valores
