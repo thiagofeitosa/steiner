@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <vector>
+#include "vetorja.h"
 
 // #define EPS 1e-4
 // #define COMP(x, y) (absf(x - y) <= EPS ? 0 : x < y ? -1 : 1)
@@ -15,11 +17,12 @@
 
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias;
+  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
   float distancia, distancias[100], limiteMax, limiteMin;
   char var[100]; char lixo[50];
 
-  double Z, x1i5, x1i6, x2i5, x2i6, x3i5, x3i6, x4i5, x4i6, x5i6;
+  double Z; //x1i5, x1i6, x2i5, x2i6, x3i5, x3i6, x4i5, x4i6, x5i6;
+  
   //abre arquivo para leitura
   FILE *file;
   file = fopen("fixos.txt","r");
@@ -46,7 +49,7 @@ int steiner(void){
     }
     fclose(file);
     //impressão de matriz das coordenadas dos pontos fixos
-    printf("espaço pertencente ao R%d\n\n", numDim);
+    printf("\nespaço pertencente ao R%d\n\n", numDim);
 
     printf("matriz de coordenadas dos pontos fixos no R%d\n", numDim);
     for (i=1; i<=numPontos; i++) {
@@ -87,10 +90,9 @@ int steiner(void){
     for (j=1; j<=numDim; j++) {
       printf("%f ", coordenadaSteiner[i][j]);
     }
-    printf("\n\n");
+    printf("\n");
   }
-
-
+  printf("\n");
 
   //calculo das distancias euclideanas de todos os pontos fixos para steiner
   cont=0;
@@ -177,6 +179,7 @@ int steiner(void){
   }
 
   //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
+  numBinariaSteiner=0;
   for (i = 1; i <= numSteiner-1; i++) {
     for (j = i+1; j <= numSteiner; j++) {
       strcpy(var,"x");
@@ -192,6 +195,7 @@ int steiner(void){
       printf("%lf%s ",distancias[cont],var);
       cont++;
       numBinarias++;
+      numBinariaSteiner++;
     }
   }
 
@@ -238,10 +242,11 @@ int steiner(void){
   {
      printf("ia[%d] = %d\n",i, ia[i]);
   }
+  printf("\n");
 
   //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações >>valores de teste
-  // int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
-  // int ja[19]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,4,7,10,13,16,17,2,5,8,11,14,16,18,3,6,9,12,15,17,18};
+  // int ja[]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
+  // int ja[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,4,7,10,13,16,17,2,5,8,11,14,16,18,3,6,9,12,15,17,18};
 
   int ja[tamVetor];
   ja[0]=0;
@@ -251,20 +256,63 @@ int steiner(void){
   }
 
   //segunda regra
-  // aux=numSteiner;
+  aux=0;
+  int aux2=1;
   cont=1;
   for (i = 0; i < numSteiner; i++) {
-    // for (i = numPontos*numSteiner+1; i <tamVetor; i++) {
-    //   if (cont<numPontos*numSteiner) {
-    //     ja[i]=cont;
-    //     cont=cont+numSteiner;
-    //   }else{
-    //     ja[i]=aux;
-    //     aux=aux+numSteiner;
-    //   }
-    // }
+    for (j = numPontos*numSteiner+aux+i+1; j <numPontos*numSteiner+numPontos+aux+i+1; j++) {
+      ja[j+aux]=cont;
+      cont=cont+numSteiner;
+    }
+
+    aux2++;
+    cont=aux2;
+    aux=aux+numSteiner;
   }
 
+  /*********Adicionado Prof**************/
+  vector<arestasteiner> vc;
+
+  int col=1;
+  for(int i=1;i<=numSteiner-1;i++){
+    for(int j=i+1;j<=numSteiner;j++){
+       arestasteiner as(i+numPontos,j+numPontos,col+(numPontos*numSteiner));
+       vc.push_back(as);
+       col++;
+    }
+  }
+
+  //pega a coluna correta na matriz a ser inserida no vetor ja
+  //coloca 1 na posicao correta da matriz
+  int pi,pj;
+  int pos=(numPontos*numSteiner)+numPontos+1;
+  for(int i=1;i<=numSteiner;i++){
+    for(int j=1;j<=numSteiner;j++){
+        if(i!=j){
+            if(i<j){
+                pi=i+numPontos;pj=j+numPontos;
+                //aqui pega a coluna desejada a ser inserida no vetor ja
+                col=buscacol(pi,pj,vc);
+                ja[pos]=col;
+                //cout << "\ncoluna de x"<<pi<<"i"<<pj<<"="<<col<<" na posicao="<<pos;
+                pos=pos+1;
+
+            }
+            if(i>j){
+                pi=j+numPontos;pj=i+numPontos;
+                //aqui pega a coluna desejada a ser inserida no vetor ja
+                col=buscacol(pi,pj,vc);
+                ja[pos]=col;
+                //cout << "\ncoluna de x"<<pj<<"i"<<pi<<"="<<col<<" na posicao="<<pos;
+                pos=pos+1;
+
+            }
+        }
+    }
+    pos=pos+numPontos;
+  }
+  /***************************************/
+  printf("\n");
   for( i = 0 ; i < tamVetor; i++)
   {
      printf("ja[%d] = %d\n",i, ja[i]);
@@ -287,19 +335,19 @@ int steiner(void){
   //tamanho da árvore
   Z = glp_mip_obj_val(lpst);
 
-  x1i5 = glp_mip_col_val(lpst, 1);
-  x1i6 = glp_mip_col_val(lpst, 2);
-  x2i5 = glp_mip_col_val(lpst, 3);
-  x2i6 = glp_mip_col_val(lpst, 4);
-  x3i5 = glp_mip_col_val(lpst, 5);
-  x3i6 = glp_mip_col_val(lpst, 6);
-  x4i5 = glp_mip_col_val(lpst, 7);
-  x4i6 = glp_mip_col_val(lpst, 8);
-  x5i6 = glp_mip_col_val(lpst, 9);
+  // x1i5 = glp_mip_col_val(lpst, 1);
+  // x1i6 = glp_mip_col_val(lpst, 2);
+  // x2i5 = glp_mip_col_val(lpst, 3);
+  // x2i6 = glp_mip_col_val(lpst, 4);
+  // x3i5 = glp_mip_col_val(lpst, 5);
+  // x3i6 = glp_mip_col_val(lpst, 6);
+  // x4i5 = glp_mip_col_val(lpst, 7);
+  // x4i6 = glp_mip_col_val(lpst, 8);
+  // x5i6 = glp_mip_col_val(lpst, 9);
 
   //mostra valores de tamanho da árvore e quais ligações foram utilizadas na árvore otimizada
   //ainda ver como fica essas variáveis das ligações
-  printf( "\nZ = %g; x1i5 = %g; x1i6 = %g; x2i5 = %g; x2i6 = %g; x3i5 = %g; x3i6 = %g; x4i5 = %g; x4i6 = %g; x5i6 = %g\n", Z, x1i5, x1i6, x2i5, x2i6, x3i5, x3i6, x4i5, x4i6, x5i6);
+  printf( "\nZ = %g;\n", Z);
 
   //finaliza o problema
   glp_delete_prob(lpst);
@@ -308,6 +356,5 @@ int steiner(void){
 }
 
 
-//void steiner();
 
 #endif

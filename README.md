@@ -19,3 +19,45 @@
 4| 0   0   0   0   0   0   1   1   0
 5| 1   0   1   0   1   0   1   0   1
 6| 0   1   0   1   0   1   0   1   1
+
+
+  x14 x24 x34
+1| 1   0   0
+2| 0   1   0
+3| 0   0   1
+4| 1   1   1
+
+
+
+
+
+INTRODUÇÃO:
+
+--Problemática
+----O quê?, por quê? (contexto)
+--Sobre
+----Apresentação e justificativa dos capitulos
+
+CORPO DO TEXTO:
+
+--Teoria
+----Ponto de partida Teórico
+--Conceitos chave
+----Definição dos Conceitos principais
+--Metodologia
+----Descrição e justificativa da abordagem da Análise
+--Análise/Resultados
+----Estudo pormenorizado das fontes/ Apresentação dos principais achados
+--Discussão
+----Interpretação dos Resultados a luz da literatura
+
+CONCLUSÃO:
+
+--Problemática
+----Resumo dos resultados a partir da pergunta inicial
+--Contribuição
+----O que o trabalho apresentou a area? o que se aprendeu?
+--Reflexão
+----Reflexões críticas sobre a pesquisa
+--Perspectivas
+----perguntas a serem abordadas em estudos futuros
