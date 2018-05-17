@@ -18,11 +18,10 @@
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
-  float distancia, distancias[100], limiteMax, limiteMin;
+  float distancia, distancias[100];// limiteMax, limiteMin;
   char var[100]; char lixo[50];
+  double Z;
 
-  double Z; //x1i5, x1i6, x2i5, x2i6, x3i5, x3i6, x4i5, x4i6, x5i6;
-  
   //abre arquivo para leitura
   FILE *file;
   file = fopen("fixos.txt","r");
@@ -48,6 +47,7 @@ int steiner(void){
       // }
     }
     fclose(file);
+
     //impressão de matriz das coordenadas dos pontos fixos
     printf("\nespaço pertencente ao R%d\n\n", numDim);
 
@@ -84,6 +84,7 @@ int steiner(void){
   }
 
   printf("\n\n");
+
   //impressão de matriz das coordenadas dos pontos steiner
   printf("matriz das coordenadas dos pontos de Steiner\n" );
   for (i=1; i<=numSteiner; i++) {
@@ -133,24 +134,26 @@ int steiner(void){
 
 //-----------------------------------------------------------------------------
 
-  //criação das colunas (restrições)
+  //criação das linhas (restrições)
   numRestricoes = numPontos+numSteiner;
   glp_add_rows(lpst, numRestricoes);
 
-  //colunas referentes as restrições de pontos fixos
+  //linhas referentes as restrições de pontos fixos
   for (i = 1; i <= numPontos; i++) {
-    strcpy(var,"p"); gcvt(i,0,lixo); strcat(var,lixo);
+    strcpy(var,"p");
+    gcvt(i,0,lixo);
+    strcat(var,lixo);
     glp_set_row_name(lpst, i, var);
     glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
   }
-  //colunas referentes as restrições de pontos de Steiner
+  //linhas referentes as restrições de pontos de Steiner
   for (i = 1; i <= numSteiner; i++) {
-    strcpy(var,"q"); gcvt(i+numPontos,0,lixo); strcat(var,lixo);
+    strcpy(var,"q");
+    gcvt(i+numPontos,0,lixo);
+    strcat(var,lixo);
     glp_set_row_name(lpst, i+numPontos, var);
     glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
   }
-
-
 //-----------------------------------------------------------------------------
 
   //criação das variáveis referentes as ligações possíveis
@@ -158,7 +161,7 @@ int steiner(void){
 
   //criações das variáveis das ligações de pontos fixos para Steiner com distancias
   printf("\nFuncao Objetivo: ");
-  cont=0;
+  cont=1;
   numBinarias=0;
   for (i = 1; i <= numPontos; i++) {
     for (j = 1; j <= numSteiner; j++) {
@@ -169,10 +172,11 @@ int steiner(void){
       gcvt(j+numPontos,0,lixo);
       strcat(var,lixo);
 
-      glp_set_col_kind(lpst, i,GLP_BV);
-      glp_set_col_name(lpst, i, var);
-      glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%lf%s ",distancias[cont],var);
+      glp_set_col_kind(lpst, cont, GLP_BV);
+      glp_set_col_name(lpst, cont, var);
+      glp_set_obj_coef(lpst, cont, distancias[cont-1]); //***********************erro tava aqui, mostrando a distancia errada
+      printf("%lf%s ",distancias[cont-1],var);
+
       cont++;
       numBinarias++;
     }
@@ -183,16 +187,17 @@ int steiner(void){
   for (i = 1; i <= numSteiner-1; i++) {
     for (j = i+1; j <= numSteiner; j++) {
       strcpy(var,"x");
-      gcvt(i+numPontos,0,lixo);
+      gcvt((i+numPontos),0,lixo);
       strcat(var,lixo);
       strcat(var,"i");
-      gcvt(j+numPontos,0,lixo);
+      gcvt((j+numPontos),0,lixo);
       strcat(var,lixo);
 
-      glp_set_col_kind(lpst, i,GLP_BV);
-      glp_set_col_name(lpst, i, var);
-      glp_set_obj_coef(lpst, i, distancias[cont]);
-      printf("%lf%s ",distancias[cont],var);
+      glp_set_col_kind(lpst, cont, GLP_BV);
+      glp_set_col_name(lpst, cont, var);
+      glp_set_obj_coef(lpst, cont, distancias[cont-1]); //***********************erro tava aqui, mostrando a distancia errada
+      printf("%lf%s ",distancias[cont-1],var);
+
       cont++;
       numBinarias++;
       numBinariaSteiner++;
@@ -200,15 +205,11 @@ int steiner(void){
   }
 
 //-----------------------------------------------------------------------------
-  // int ia[19]={0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,6,6};
-  // int ja[19]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
-  // double ar[19]={0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-
   //tamanho do vetor da matriz a seguir
   int tamVetor = ((numBinarias*2)+1);
   printf("\n\ntamVetor é %d\n\n", tamVetor);
 
-  //vetor ia que representa a linha da matriz quantidade de restrições >>valores de teste
+  //vetor ia que representa a linha da matriz quantidade de restrições
   int ia[tamVetor];
   ia[0]=0;
   //primeira regra
@@ -244,14 +245,10 @@ int steiner(void){
   }
   printf("\n");
 
-  //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações >>valores de teste
-  // int ja[]={0,1,2,3,4,5,6,7,8,1,3,5,7,9,2,4,6,8,9};
-  // int ja[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,4,7,10,13,16,17,2,5,8,11,14,16,18,3,6,9,12,15,17,18};
-
+  //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações
   int ja[tamVetor];
-  ja[0]=0;
   //primeira regra
-  for (i = 1; i <= numPontos*numSteiner; i++) {
+  for (i = 0; i <= numPontos*numSteiner; i++) {
       ja[i]=i;
   }
 
@@ -259,6 +256,7 @@ int steiner(void){
   aux=0;
   int aux2=1;
   cont=1;
+
   for (i = 0; i < numSteiner; i++) {
     for (j = numPontos*numSteiner+aux+i+1; j <numPontos*numSteiner+numPontos+aux+i+1; j++) {
       ja[j+aux]=cont;
@@ -328,6 +326,7 @@ int steiner(void){
     }
   }
 
+  glp_write_lp(lpst,NULL,"teste-steiner.lp");
   glp_load_matrix(lpst, tamVetor-1, ia, ja, ar);
   glp_simplex(lpst,NULL);
   glp_intopt(lpst,NULL);
@@ -335,26 +334,17 @@ int steiner(void){
   //tamanho da árvore
   Z = glp_mip_obj_val(lpst);
 
-  // x1i5 = glp_mip_col_val(lpst, 1);
-  // x1i6 = glp_mip_col_val(lpst, 2);
-  // x2i5 = glp_mip_col_val(lpst, 3);
-  // x2i6 = glp_mip_col_val(lpst, 4);
-  // x3i5 = glp_mip_col_val(lpst, 5);
-  // x3i6 = glp_mip_col_val(lpst, 6);
-  // x4i5 = glp_mip_col_val(lpst, 7);
-  // x4i6 = glp_mip_col_val(lpst, 8);
-  // x5i6 = glp_mip_col_val(lpst, 9);
-
-  //mostra valores de tamanho da árvore e quais ligações foram utilizadas na árvore otimizada
-  //ainda ver como fica essas variáveis das ligações
-  printf( "\nZ = %g;\n", Z);
+  //imprime o tamanho da árvore e os valores das variáveis binarias correspondentes as ligações
+  printf( "\nZ = %g; ", Z);
+  for (i = 1; i <= numBinarias; i++) {
+    cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"; ";
+  }
+  printf("\n\n");
 
   //finaliza o problema
   glp_delete_prob(lpst);
 
   return 0;
 }
-
-
 
 #endif
