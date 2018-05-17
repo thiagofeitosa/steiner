@@ -18,7 +18,7 @@
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
-  float distancia, distancias[100];// limiteMax, limiteMin;
+  float distancia;// limiteMax, limiteMin;
   char var[100]; char lixo[50];
   double Z;
 
@@ -29,6 +29,7 @@ int steiner(void){
   //carrega o numero de pontos fixos e dimensões
   fscanf(file, "%d %d", &numPontos, &numDim);
   numSteiner=numPontos-2;
+  float distancias[numPontos*numSteiner*2];
   //criação de matriz das coordenadas dos pontos fixos a partir de arquivo
   float coordenadaFixo[numPontos][numDim];
 
@@ -141,7 +142,7 @@ int steiner(void){
   //linhas referentes as restrições de pontos fixos
   for (i = 1; i <= numPontos; i++) {
     strcpy(var,"p");
-    gcvt(i,0,lixo);
+    gcvt(i,10,lixo);
     strcat(var,lixo);
     glp_set_row_name(lpst, i, var);
     glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
@@ -149,7 +150,7 @@ int steiner(void){
   //linhas referentes as restrições de pontos de Steiner
   for (i = 1; i <= numSteiner; i++) {
     strcpy(var,"q");
-    gcvt(i+numPontos,0,lixo);
+    gcvt(i+numPontos,10,lixo);
     strcat(var,lixo);
     glp_set_row_name(lpst, i+numPontos, var);
     glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
@@ -166,10 +167,10 @@ int steiner(void){
   for (i = 1; i <= numPontos; i++) {
     for (j = 1; j <= numSteiner; j++) {
       strcpy(var,"x");
-      gcvt(i,0,lixo);
+      gcvt(i,10,lixo);
       strcat(var,lixo);
       strcat(var,"i");
-      gcvt(j+numPontos,0,lixo);
+      gcvt(j+numPontos,10,lixo);
       strcat(var,lixo);
 
       glp_set_col_kind(lpst, cont, GLP_BV);
@@ -187,10 +188,10 @@ int steiner(void){
   for (i = 1; i <= numSteiner-1; i++) {
     for (j = i+1; j <= numSteiner; j++) {
       strcpy(var,"x");
-      gcvt((i+numPontos),0,lixo);
+      gcvt((i+numPontos),10,lixo);
       strcat(var,lixo);
       strcat(var,"i");
-      gcvt((j+numPontos),0,lixo);
+      gcvt((j+numPontos),10,lixo);
       strcat(var,lixo);
 
       glp_set_col_kind(lpst, cont, GLP_BV);
