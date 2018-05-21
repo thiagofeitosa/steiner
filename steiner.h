@@ -9,12 +9,6 @@
 #include <vector>
 #include "vetorja.h"
 
-// #define EPS 1e-4
-// #define COMP(x, y) (absf(x - y) <= EPS ? 0 : x < y ? -1 : 1)
-// COMP(7.001, 7) == 1
-// COMP(7.000001, 7) == 0
-// COMP(7, 8) == -1
-
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
@@ -23,31 +17,29 @@ int steiner(void){
   double Z;
 
   //abre arquivo para leitura
-  FILE *file;
-  file = fopen("fixos.txt","r");
+  FILE *entrada, *saidafixo,*saidasteiner, *edges;
+  entrada = fopen("fixos.txt","r");
+  saidafixo = fopen("gnuplot/ptfixos.dat","w");
+  saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
+  edges = fopen("gnuplot/edges.dat","w");
 
   //carrega o numero de pontos fixos e dimensões
-  fscanf(file, "%d %d", &numPontos, &numDim);
+  fscanf(entrada, "%d %d", &numPontos, &numDim);
   numSteiner=numPontos-2;
   float distancias[numPontos*numSteiner*2];
   //criação de matriz das coordenadas dos pontos fixos a partir de arquivo
   float coordenadaFixo[numPontos][numDim];
 
-  for ( i=1; i<=numPontos; i++ )
+  for ( i=1; i<=numPontos; i++ ){
     for ( j=1; j<=numDim; j++ )
     {
-      fscanf (file, "%f", &coordenadaFixo[i][j]);
-
-      //pra pegar os valores randomicos depois
-      // if ((float)coordenadaFixo<(float)limiteMin)
-      // {
-      //   limiteMin=coordenadaFixo;
-      // }else if ((float)coordenadaFixo>(float)limiteMax)
-      // {
-      //   limiteMax=coordenadaFixo;
-      // }
+      fscanf (entrada, "%f", &coordenadaFixo[i][j]);
+      fprintf(saidafixo, "%f ", coordenadaFixo[i][j]);
     }
-    fclose(file);
+    fprintf(saidafixo, "\n");
+  }
+    fclose(entrada);
+    fclose(saidafixo);
 
     //impressão de matriz das coordenadas dos pontos fixos
     printf("\nespaço pertencente ao R%d\n\n", numDim);
@@ -64,7 +56,6 @@ int steiner(void){
   //leitura de coordenadas dos pontos de steiner
   float coordenadaSteiner[numSteiner][numDim];
   printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
-
   for ( i=1; i<=numSteiner; i++ ){
     printf("coordenadas do %dº ponto de steiner:\n",i);
     for ( j=1; j<=numDim; j++ )
@@ -77,12 +68,11 @@ int steiner(void){
         printf("coordenada z: ");
       }
       scanf ("%f", &coordenadaSteiner[i][j]);
-
-      //pra pegar os valores randomicos depois
-      // coordenadaSteiner[i][j]=limiteMin + rand() % limiteMax;
-      // printf("%f\n", coordenadaSteiner[i][j]);
+      fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
     }
+    fprintf(saidasteiner, "\n");
   }
+  fclose(saidasteiner);
 
   printf("\n\n");
 
@@ -175,7 +165,7 @@ int steiner(void){
 
       glp_set_col_kind(lpst, cont, GLP_BV);
       glp_set_col_name(lpst, cont, var);
-      glp_set_obj_coef(lpst, cont, distancias[cont-1]); //***********************erro tava aqui, mostrando a distancia errada
+      glp_set_obj_coef(lpst, cont, distancias[cont-1]);
       printf("%lf%s ",distancias[cont-1],var);
 
       cont++;
@@ -196,7 +186,7 @@ int steiner(void){
 
       glp_set_col_kind(lpst, cont, GLP_BV);
       glp_set_col_name(lpst, cont, var);
-      glp_set_obj_coef(lpst, cont, distancias[cont-1]); //***********************erro tava aqui, mostrando a distancia errada
+      glp_set_obj_coef(lpst, cont, distancias[cont-1]);
       printf("%lf%s ",distancias[cont-1],var);
 
       cont++;
@@ -204,6 +194,17 @@ int steiner(void){
       numBinariaSteiner++;
     }
   }
+
+  //coordenadaAresta pra imprimir no edges.dat
+  //
+  // printf("\n");
+  // for (i=1; i<=numBinarias; i++) {
+  //   for (j=1; j<=numDim*2; j++) {
+  //     printf("%f ", coordenadaAresta[i][j]);
+  //   }
+  //   printf("\n");
+  // }
+  // printf("\n");
 
 //-----------------------------------------------------------------------------
   //tamanho do vetor da matriz a seguir
@@ -240,11 +241,11 @@ int steiner(void){
     aux++;
   }
   //impressão para testes
-  for( i = 0 ; i < tamVetor; i++)
-  {
-     printf("ia[%d] = %d\n",i, ia[i]);
-  }
-  printf("\n");
+  // for( i = 0 ; i < tamVetor; i++)
+  // {
+  //    printf("ia[%d] = %d\n",i, ia[i]);
+  // }
+  // printf("\n");
 
   //vetor ja que representa a coluna da matriz são as variáveis binarias das ligações
   int ja[tamVetor];
@@ -269,7 +270,7 @@ int steiner(void){
     aux=aux+numSteiner;
   }
 
-  /*********Adicionado Prof**************/
+  //terceira regra
   vector<arestasteiner> vc;
 
   int col=1;
@@ -287,35 +288,32 @@ int steiner(void){
   int pos=(numPontos*numSteiner)+numPontos+1;
   for(int i=1;i<=numSteiner;i++){
     for(int j=1;j<=numSteiner;j++){
-        if(i!=j){
-            if(i<j){
-                pi=i+numPontos;pj=j+numPontos;
-                //aqui pega a coluna desejada a ser inserida no vetor ja
-                col=buscacol(pi,pj,vc);
-                ja[pos]=col;
-                //cout << "\ncoluna de x"<<pi<<"i"<<pj<<"="<<col<<" na posicao="<<pos;
-                pos=pos+1;
+      if(i!=j){
+        if(i<j){
+          pi=i+numPontos;pj=j+numPontos;
+          //aqui pega a coluna desejada a ser inserida no vetor ja
+          col=buscacol(pi,pj,vc);
+          ja[pos]=col;
+          pos=pos+1;
 
-            }
-            if(i>j){
-                pi=j+numPontos;pj=i+numPontos;
-                //aqui pega a coluna desejada a ser inserida no vetor ja
-                col=buscacol(pi,pj,vc);
-                ja[pos]=col;
-                //cout << "\ncoluna de x"<<pj<<"i"<<pi<<"="<<col<<" na posicao="<<pos;
-                pos=pos+1;
-
-            }
         }
+        if(i>j){
+          pi=j+numPontos;pj=i+numPontos;
+          //aqui pega a coluna desejada a ser inserida no vetor ja
+          col=buscacol(pi,pj,vc);
+          ja[pos]=col;
+          pos=pos+1;
+        }
+      }
     }
     pos=pos+numPontos;
   }
-  /***************************************/
-  printf("\n");
-  for( i = 0 ; i < tamVetor; i++)
-  {
-     printf("ja[%d] = %d\n",i, ja[i]);
-  }
+  
+  // printf("\n");
+  // for( i = 0 ; i < tamVetor; i++)
+  // {
+  //    printf("ja[%d] = %d\n",i, ja[i]);
+  // }
 
   //vetor ar que representa o valor dos itens da matriz delimitados acima inserindo valores
   double ar[tamVetor];
@@ -336,14 +334,20 @@ int steiner(void){
   Z = glp_mip_obj_val(lpst);
 
   //imprime o tamanho da árvore e os valores das variáveis binarias correspondentes as ligações
-  printf( "\nZ = %g; ", Z);
+  printf( "\nZ = %g;\n", Z);
   for (i = 1; i <= numBinarias; i++) {
-    cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"; ";
+    cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"\n";
+    if (glp_mip_col_val(lpst,i)==1) {
+      fprintf(edges, "edge referente a ligação %s\n",glp_get_col_name(lpst,i));
+    }
   }
+  fclose(edges);
   printf("\n\n");
 
   //finaliza o problema
   glp_delete_prob(lpst);
+
+  system("gnuplot plota.gnu");
 
   return 0;
 }
