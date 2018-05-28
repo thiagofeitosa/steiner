@@ -11,7 +11,7 @@
 
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
+  int i,j,k, escolha=0, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
   float distancia;// limiteMax, limiteMin;
   char var[100]; char lixo[50];
   double Z;
@@ -55,39 +55,49 @@ int steiner(void){
     printf("\n");
 
   //leitura de coordenadas dos pontos de steiner
+  printf("digite 1 para ler coordena dos Pontos de Steiner do arquivo e 2 para inserir manualmente:\n" );
+  while (escolha!=1 and escolha!=2) {
+    scanf("%d", &escolha);
+  }
+
   float coordenadaSteiner[numSteiner][numDim];
 
-  for ( i=1; i<=numSteiner; i++ ){
-    for ( j=1; j<=numDim; j++ )
-    {
-      fscanf (entradasteiner, "%f", &coordenadaSteiner[i][j]);
-      fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
+  if (escolha==1) {
+    for ( i=1; i<=numSteiner; i++ ){
+      for ( j=1; j<=numDim; j++ )
+      {
+        fscanf (entradasteiner, "%f", &coordenadaSteiner[i][j]);
+        fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
+      }
+      fprintf(saidasteiner, "\n");
     }
-    fprintf(saidasteiner, "\n");
-  }
-    fclose(entradasteiner);
+      fclose(entradasteiner);
+      fclose(saidasteiner);
+  }else{
+    printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
+    for ( i=1; i<=numSteiner; i++ ){
+      printf("coordenadas do %dº ponto de steiner:\n",i);
+      for ( j=1; j<=numDim; j++ )
+      {
+        if (j==1) {
+          printf("coordenada x: ");
+        }else if (j==2){
+          printf("coordenada y: ");
+        }else if(j==3){
+          printf("coordenada z: ");
+        }
+        scanf ("%f", &coordenadaSteiner[i][j]);
+        fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
+      }
+      fprintf(saidasteiner, "\n");
+    }
     fclose(saidasteiner);
 
-  // printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
-  // for ( i=1; i<=numSteiner; i++ ){
-  //   printf("coordenadas do %dº ponto de steiner:\n",i);
-  //   for ( j=1; j<=numDim; j++ )
-  //   {
-  //     if (j==1) {
-  //       printf("coordenada x: ");
-  //     }else if (j==2){
-  //       printf("coordenada y: ");
-  //     }else if(j==3){
-  //       printf("coordenada z: ");
-  //     }
-  //     scanf ("%f", &coordenadaSteiner[i][j]);
-  //     fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
-  //   }
-  //   fprintf(saidasteiner, "\n");
-  // }
-  // fclose(saidasteiner);
-  //
-  // printf("\n\n");
+    printf("\n\n");
+  }
+
+
+
 
   //impressão de matriz das coordenadas dos pontos steiner
   printf("matriz das coordenadas dos pontos de Steiner\n" );

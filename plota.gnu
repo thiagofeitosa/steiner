@@ -4,7 +4,7 @@ set style arrow 1 nohead lw 4
 set autoscale
 set nokey
 
-numPontos=9
+numPontos=1
 
 plot "gnuplot/edges.dat" using 1:2:($3-$1):($4-$2) with vectors arrowstyle 1,\
 "gnuplot/ptfixos.dat" u 1:2:(0.5) with circles fill solid lc rgb "black" notitle,\
