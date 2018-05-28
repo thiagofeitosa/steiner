@@ -17,14 +17,15 @@ int steiner(void){
   double Z;
 
   //abre arquivo para leitura
-  FILE *entrada, *saidafixo,*saidasteiner, *edges;
-  entrada = fopen("fixos.txt","r");
+  FILE *entradafixo, *entradasteiner, *saidafixo,*saidasteiner, *edges;
+  entradafixo = fopen("fixos.txt","r");
+  entradasteiner= fopen("steiner.txt","r");
   saidafixo = fopen("gnuplot/ptfixos.dat","w");
   saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
   edges = fopen("gnuplot/edges.dat","w");
 
   //carrega o numero de pontos fixos e dimensões
-  fscanf(entrada, "%d %d", &numPontos, &numDim);
+  fscanf(entradafixo, "%d %d", &numPontos, &numDim);
   numSteiner=numPontos-2;
   float distancias[numPontos*numSteiner*2];
   //criação de matriz das coordenadas dos pontos fixos a partir de arquivo
@@ -33,12 +34,12 @@ int steiner(void){
   for ( i=1; i<=numPontos; i++ ){
     for ( j=1; j<=numDim; j++ )
     {
-      fscanf (entrada, "%f", &coordenadaFixo[i][j]);
+      fscanf (entradafixo, "%f", &coordenadaFixo[i][j]);
       fprintf(saidafixo, "%f ", coordenadaFixo[i][j]);
     }
     fprintf(saidafixo, "\n");
   }
-    fclose(entrada);
+    fclose(entradafixo);
     fclose(saidafixo);
 
     //impressão de matriz das coordenadas dos pontos fixos
@@ -55,26 +56,38 @@ int steiner(void){
 
   //leitura de coordenadas dos pontos de steiner
   float coordenadaSteiner[numSteiner][numDim];
-  printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
+
   for ( i=1; i<=numSteiner; i++ ){
-    printf("coordenadas do %dº ponto de steiner:\n",i);
     for ( j=1; j<=numDim; j++ )
     {
-      if (j==1) {
-        printf("coordenada x: ");
-      }else if (j==2){
-        printf("coordenada y: ");
-      }else if(j==3){
-        printf("coordenada z: ");
-      }
-      scanf ("%f", &coordenadaSteiner[i][j]);
+      fscanf (entradasteiner, "%f", &coordenadaSteiner[i][j]);
       fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
     }
     fprintf(saidasteiner, "\n");
   }
-  fclose(saidasteiner);
+    fclose(entradasteiner);
+    fclose(saidasteiner);
 
-  printf("\n\n");
+  // printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
+  // for ( i=1; i<=numSteiner; i++ ){
+  //   printf("coordenadas do %dº ponto de steiner:\n",i);
+  //   for ( j=1; j<=numDim; j++ )
+  //   {
+  //     if (j==1) {
+  //       printf("coordenada x: ");
+  //     }else if (j==2){
+  //       printf("coordenada y: ");
+  //     }else if(j==3){
+  //       printf("coordenada z: ");
+  //     }
+  //     scanf ("%f", &coordenadaSteiner[i][j]);
+  //     fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
+  //   }
+  //   fprintf(saidasteiner, "\n");
+  // }
+  // fclose(saidasteiner);
+  //
+  // printf("\n\n");
 
   //impressão de matriz das coordenadas dos pontos steiner
   printf("matriz das coordenadas dos pontos de Steiner\n" );
@@ -308,7 +321,7 @@ int steiner(void){
     }
     pos=pos+numPontos;
   }
-  
+
   // printf("\n");
   // for( i = 0 ; i < tamVetor; i++)
   // {
