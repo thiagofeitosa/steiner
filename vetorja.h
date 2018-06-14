@@ -31,6 +31,10 @@ int buscacol(int xi, int xj, vector<arestasteiner> vc){
    return 0;
 }
 
+bool cmpf(float A, float B, float epsilon = 0.000005)
+{
+    return (fabs(A - B) < epsilon);
+}
 
 
 #endif

@@ -9,6 +9,13 @@
 #include <vector>
 #include "vetorja.h"
 
+//comparar float
+#define EPS 1e-4
+#define COMP(x, y) (absf(x - y) <= EPS ? 0 : x < y ? -1 : 1)
+// COMP(7.001, 7) == 1
+// COMP(7.000001, 7) == 0
+// COMP(7, 8) == -1
+
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, escolha=0, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
@@ -96,9 +103,6 @@ int steiner(void){
     printf("\n\n");
   }
 
-
-
-
   //impressão de matriz das coordenadas dos pontos steiner
   printf("matriz das coordenadas dos pontos de Steiner\n" );
   for (i=1; i<=numSteiner; i++) {
@@ -110,6 +114,7 @@ int steiner(void){
   printf("\n");
 
   //calculo das distancias euclideanas de todos os pontos fixos para steiner
+  float maiordfixos = 0;
   cont=0;
   for (i=1; i<=numPontos; i++) {
     for (j=1; j<=numSteiner; j++) {
@@ -121,10 +126,15 @@ int steiner(void){
       printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
+      if (COMP(distancia, maiordfixos) == 1) {
+        maiordfixos=distancia;
+      }
     }
+    printf("maiordfixos = %f\n", maiordfixos);
   }
 
   //calculo das distancias euclideanas de todos os pontos de steiner entre si
+  float maiordsteiner=0;
   for (i=1; i<numSteiner; i++) {
     for (j=i+1; j<=numSteiner; j++) {
       distancia=0;
@@ -135,7 +145,11 @@ int steiner(void){
       printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+numPontos,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
+      if (COMP(distancia, maiordsteiner) == 1) {
+        maiordsteiner=distancia;
+      }
     }
+    printf("maiordsteiner = %f\n", maiordsteiner);
   }
 
 //---------------------OTIMIZAÇÃO DA ÁRVORE----------------------------------
@@ -357,14 +371,16 @@ int steiner(void){
   Z = glp_mip_obj_val(lpst);
 
   //imprime o tamanho da árvore e os valores das variáveis binarias correspondentes as ligações
-  printf( "\nZ = %g;\n", Z);
+
   for (i = 1; i <= numBinarias; i++) {
     cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"\n";
     if (glp_mip_col_val(lpst,i)==1) {
-      fprintf(edges, "edge referente a ligação %s\n",glp_get_col_name(lpst,i));
+      fprintf(edges, "%s\n",glp_get_col_name(lpst,i));
     }
   }
   fclose(edges);
+  printf( "\nZ = %g;\n", Z);
+
   printf("\n\n");
 
   //finaliza o problema
