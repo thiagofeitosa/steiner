@@ -11,7 +11,7 @@
 
 //comparar float
 #define EPS 1e-4
-#define COMP(x, y) (absf(x - y) <= EPS ? 0 : x < y ? -1 : 1)
+#define COMP(x, y) (fabs(x - y) <= EPS ? 0 : x < y ? -1 : 1)
 // COMP(7.001, 7) == 1
 // COMP(7.000001, 7) == 0
 // COMP(7, 8) == -1
@@ -24,7 +24,7 @@ int steiner(void){
   double Z;
 
   //abre arquivo para leitura
-  FILE *entradafixo, *entradasteiner, *saidafixo,*saidasteiner, *edges;
+  FILE *entradafixo, *entradasteiner, *saidafixo, *saidasteiner, *edges;
   entradafixo = fopen("fixos.txt","r");
   entradasteiner= fopen("steiner.txt","r");
   saidafixo = fopen("gnuplot/ptfixos.dat","w");
@@ -123,15 +123,15 @@ int steiner(void){
          distancia=distancia+pow(coordenadaFixo[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
+      //printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
       if (COMP(distancia, maiordfixos) == 1) {
         maiordfixos=distancia;
       }
     }
-    printf("maiordfixos = %f\n", maiordfixos);
   }
+  //printf("maiordfixos = %f\n", maiordfixos);
 
   //calculo das distancias euclideanas de todos os pontos de steiner entre si
   float maiordsteiner=0;
@@ -142,15 +142,15 @@ int steiner(void){
          distancia=distancia+pow(coordenadaSteiner[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+numPontos,j+numPontos,distancia);
+      //printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+numPontos,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
       if (COMP(distancia, maiordsteiner) == 1) {
         maiordsteiner=distancia;
       }
     }
-    printf("maiordsteiner = %f\n", maiordsteiner);
   }
+  //printf("maiordsteiner = %f\n", maiordsteiner);
 
 //---------------------OTIMIZAÇÃO DA ÁRVORE----------------------------------
 
@@ -160,29 +160,6 @@ int steiner(void){
   glp_set_prob_name(lpst, "steiner");
   glp_set_obj_dir(lpst, GLP_MIN);
 
-//-----------------------------------------------------------------------------
-
-  //criação das linhas (restrições)
-  numRestricoes = numPontos+numSteiner;
-  glp_add_rows(lpst, numRestricoes);
-
-  //linhas referentes as restrições de pontos fixos
-  for (i = 1; i <= numPontos; i++) {
-    strcpy(var,"p");
-    gcvt(i,10,lixo);
-    strcat(var,lixo);
-    glp_set_row_name(lpst, i, var);
-    glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
-  }
-  //linhas referentes as restrições de pontos de Steiner
-  for (i = 1; i <= numSteiner; i++) {
-    strcpy(var,"q");
-    gcvt(i+numPontos,10,lixo);
-    strcat(var,lixo);
-    glp_set_row_name(lpst, i+numPontos, var);
-    glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
-  }
-//-----------------------------------------------------------------------------
 
   //criação das variáveis referentes as ligações possíveis
   glp_add_cols(lpst, (numPontos*numSteiner+(numSteiner*(numPontos-3)/2)));
@@ -232,21 +209,35 @@ int steiner(void){
     }
   }
 
-  //coordenadaAresta pra imprimir no edges.dat
-  //
-  // printf("\n");
-  // for (i=1; i<=numBinarias; i++) {
-  //   for (j=1; j<=numDim*2; j++) {
-  //     printf("%f ", coordenadaAresta[i][j]);
-  //   }
-  //   printf("\n");
-  // }
-  // printf("\n");
+  printf("\n\n");
 
+  //-----------------------------------------------------------------------------
+
+    //criação das linhas (restrições)
+    numRestricoes = numPontos+numSteiner;
+    glp_add_rows(lpst, numRestricoes);
+
+    //linhas referentes as restrições de pontos fixos
+    for (i = 1; i <= numPontos; i++) {
+      strcpy(var,"p");
+      gcvt(i,10,lixo);
+      strcat(var,lixo);
+      glp_set_row_name(lpst, i, var);
+      glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
+    }
+    //linhas referentes as restrições de pontos de Steiner
+    for (i = 1; i <= numSteiner; i++) {
+      strcpy(var,"q");
+      gcvt(i+numPontos,10,lixo);
+      strcat(var,lixo);
+      glp_set_row_name(lpst, i+numPontos, var);
+      glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
+    }
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
   //tamanho do vetor da matriz a seguir
   int tamVetor = ((numBinarias*2)+1);
-  printf("\n\ntamVetor é %d\n\n", tamVetor);
+  //printf("\n\ntamVetor é %d\n\n", tamVetor);
 
   //vetor ia que representa a linha da matriz quantidade de restrições
   int ia[tamVetor];
@@ -373,7 +364,7 @@ int steiner(void){
   //imprime o tamanho da árvore e os valores das variáveis binarias correspondentes as ligações
 
   for (i = 1; i <= numBinarias; i++) {
-    cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"\n";
+    //cout << glp_get_col_name(lpst,i) << "=" << glp_mip_col_val(lpst,i) <<"\n";
     if (glp_mip_col_val(lpst,i)==1) {
       fprintf(edges, "%s\n",glp_get_col_name(lpst,i));
     }
