@@ -15,9 +15,6 @@ class arestasteiner{
   int geti(){ return i;}
   int getj(){ return j;}
   int getcol(){ return col;}
-  // void mostra(){
-  //     cout <<"\nx"<<i<<"i"<<j<<" na coluna="<<col;
-  // }
 
 };
 
@@ -30,6 +27,5 @@ int buscacol(int xi, int xj, vector<arestasteiner> vc){
    }
    return 0;
 }
-
 
 #endif

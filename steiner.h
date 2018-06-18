@@ -19,9 +19,10 @@
 int steiner(void){
   //declaração de variáveis utilizadas em todas as partes do problema
   int i,j,k, escolha=0, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
-  float distancia;// limiteMax, limiteMin;
+  float distancia;
   char var[100]; char lixo[50];
   double Z;
+  vector <string>variaveis;
 
   //abre arquivo para leitura
   FILE *entradafixo, *entradasteiner, *saidafixo, *saidasteiner, *edges;
@@ -123,7 +124,7 @@ int steiner(void){
          distancia=distancia+pow(coordenadaFixo[i][k]-coordenadaSteiner[j][k],2);
       }
       distancia=sqrt(distancia);
-      //printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
+      printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
       if (COMP(distancia, maiordfixos) == 1) {
@@ -131,7 +132,7 @@ int steiner(void){
       }
     }
   }
-  //printf("maiordfixos = %f\n", maiordfixos);
+  printf("maiordfixos = %f\n", maiordfixos);
 
   //calculo das distancias euclideanas de todos os pontos de steiner entre si
   float maiordsteiner=0;
@@ -150,7 +151,8 @@ int steiner(void){
       }
     }
   }
-  //printf("maiordsteiner = %f\n", maiordsteiner);
+  printf("maiordsteiner = %f\n", maiordsteiner);
+
 
 //---------------------OTIMIZAÇÃO DA ÁRVORE----------------------------------
 
@@ -159,57 +161,6 @@ int steiner(void){
   lpst = glp_create_prob();
   glp_set_prob_name(lpst, "steiner");
   glp_set_obj_dir(lpst, GLP_MIN);
-
-
-  //criação das variáveis referentes as ligações possíveis
-  glp_add_cols(lpst, (numPontos*numSteiner+(numSteiner*(numPontos-3)/2)));
-
-  //criações das variáveis das ligações de pontos fixos para Steiner com distancias
-  printf("\nFuncao Objetivo: ");
-  cont=1;
-  numBinarias=0;
-  for (i = 1; i <= numPontos; i++) {
-    for (j = 1; j <= numSteiner; j++) {
-      strcpy(var,"x");
-      gcvt(i,10,lixo);
-      strcat(var,lixo);
-      strcat(var,"i");
-      gcvt(j+numPontos,10,lixo);
-      strcat(var,lixo);
-
-      glp_set_col_kind(lpst, cont, GLP_BV);
-      glp_set_col_name(lpst, cont, var);
-      glp_set_obj_coef(lpst, cont, distancias[cont-1]);
-      printf("%lf%s ",distancias[cont-1],var);
-
-      cont++;
-      numBinarias++;
-    }
-  }
-
-  //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
-  numBinariaSteiner=0;
-  for (i = 1; i <= numSteiner-1; i++) {
-    for (j = i+1; j <= numSteiner; j++) {
-      strcpy(var,"x");
-      gcvt((i+numPontos),10,lixo);
-      strcat(var,lixo);
-      strcat(var,"i");
-      gcvt((j+numPontos),10,lixo);
-      strcat(var,lixo);
-
-      glp_set_col_kind(lpst, cont, GLP_BV);
-      glp_set_col_name(lpst, cont, var);
-      glp_set_obj_coef(lpst, cont, distancias[cont-1]);
-      printf("%lf%s ",distancias[cont-1],var);
-
-      cont++;
-      numBinarias++;
-      numBinariaSteiner++;
-    }
-  }
-
-  printf("\n\n");
 
   //-----------------------------------------------------------------------------
 
@@ -233,7 +184,76 @@ int steiner(void){
       glp_set_row_name(lpst, i+numPontos, var);
       glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
     }
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+
+  //criação das variáveis referentes as ligações possíveis
+  glp_add_cols(lpst, (numPontos*numSteiner+(numSteiner*(numPontos-3)/2)));
+
+  //criações das variáveis das ligações de pontos fixos para Steiner com distancias
+  printf("\nFuncao Objetivo: ");
+  cont=1;
+  numBinarias=0;
+  for (i = 1; i <= numPontos; i++) {
+    for (j = 1; j <= numSteiner; j++) {
+
+      strcpy(var,"x");
+      gcvt(i,10,lixo);
+      strcat(var,lixo);
+      strcat(var,"i");
+      gcvt(j+numPontos,10,lixo);
+      strcat(var,lixo);
+
+        glp_set_col_kind(lpst, cont, GLP_BV);
+        glp_set_col_name(lpst, cont, var);
+        if(COMP(distancias[cont-1],maiordfixos*0.87)==-1){
+           glp_set_obj_coef(lpst, cont, distancias[cont-1]);
+        }else{
+           glp_set_obj_coef(lpst, cont, 99999);
+           std::string s(var);
+           variaveis.push_back(s);
+        }
+
+        //printf("%lf%s ",distancias[cont-1],var);
+        numBinarias++;
+        cont++;
+    }
+  }
+
+  //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
+  numBinariaSteiner=0;
+  for (i = 1; i <= numSteiner-1; i++) {
+    for (j = i+1; j <= numSteiner; j++) {
+      strcpy(var,"x");
+      gcvt((i+numPontos),10,lixo);
+      strcat(var,lixo);
+      strcat(var,"i");
+      gcvt((j+numPontos),10,lixo);
+      strcat(var,lixo);
+
+      glp_set_col_kind(lpst, cont, GLP_BV);
+      glp_set_col_name(lpst, cont, var);
+      if(COMP(distancias[cont-1],maiordsteiner*0.87)==-1 || numSteiner == 2){
+         glp_set_obj_coef(lpst, cont, distancias[cont-1]);
+      }
+      else{
+         glp_set_obj_coef(lpst, cont, 99999);
+         std::string s(var);
+         variaveis.push_back(s);
+      }
+      //printf("%lf%s ",distancias[cont-1],var);
+      numBinarias++;
+      numBinariaSteiner++;
+      cont++;
+    }
+  }
+
+  printf("\n\n VARIAVEIS ELIMINADAS\n");
+
+  for(int i=0;i<variaveis.size();i++){
+    cout << variaveis[i] << endl;
+  }
+  printf("***************\n\n");
+
 //-----------------------------------------------------------------------------
   //tamanho do vetor da matriz a seguir
   int tamVetor = ((numBinarias*2)+1);
@@ -337,6 +357,7 @@ int steiner(void){
     pos=pos+numPontos;
   }
 
+  //impressão para testes
   // printf("\n");
   // for( i = 0 ; i < tamVetor; i++)
   // {
@@ -377,7 +398,7 @@ int steiner(void){
   //finaliza o problema
   glp_delete_prob(lpst);
 
-  system("gnuplot plota.gnu");
+  //system("gnuplot plota.gnu");
 
   return 0;
 }
