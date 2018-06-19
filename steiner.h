@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <vector>
 #include "vetorja.h"
 
 //comparar float
@@ -22,7 +21,6 @@ int steiner(void){
   float distancia;
   char var[100]; char lixo[50];
   double Z;
-  vector <string>variaveis;
 
   //abre arquivo para leitura
   FILE *entradafixo, *entradasteiner, *saidafixo, *saidasteiner, *edges;
@@ -63,10 +61,11 @@ int steiner(void){
     printf("\n");
 
   //leitura de coordenadas dos pontos de steiner
-  printf("digite 1 para ler coordena dos Pontos de Steiner do arquivo e 2 para inserir manualmente:\n" );
-  while (escolha!=1 and escolha!=2) {
-    scanf("%d", &escolha);
-  }
+  // printf("digite 1 para ler coordena dos Pontos de Steiner do arquivo e 2 para inserir manualmente:\n" );
+  // while (escolha!=1 and escolha!=2) {
+  //   scanf("%d", &escolha);
+  // }
+  escolha=1;
 
   float coordenadaSteiner[numSteiner][numDim];
 
@@ -162,29 +161,7 @@ int steiner(void){
   glp_set_prob_name(lpst, "steiner");
   glp_set_obj_dir(lpst, GLP_MIN);
 
-  //-----------------------------------------------------------------------------
-
-    //criação das linhas (restrições)
-    numRestricoes = numPontos+numSteiner;
-    glp_add_rows(lpst, numRestricoes);
-
-    //linhas referentes as restrições de pontos fixos
-    for (i = 1; i <= numPontos; i++) {
-      strcpy(var,"p");
-      gcvt(i,10,lixo);
-      strcat(var,lixo);
-      glp_set_row_name(lpst, i, var);
-      glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
-    }
-    //linhas referentes as restrições de pontos de Steiner
-    for (i = 1; i <= numSteiner; i++) {
-      strcpy(var,"q");
-      gcvt(i+numPontos,10,lixo);
-      strcat(var,lixo);
-      glp_set_row_name(lpst, i+numPontos, var);
-      glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
-    }
-  //-----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------//
 
   //criação das variáveis referentes as ligações possíveis
   glp_add_cols(lpst, (numPontos*numSteiner+(numSteiner*(numPontos-3)/2)));
@@ -209,8 +186,8 @@ int steiner(void){
            glp_set_obj_coef(lpst, cont, distancias[cont-1]);
         }else{
            glp_set_obj_coef(lpst, cont, 99999);
-           std::string s(var);
-           variaveis.push_back(s);
+           glp_set_col_bnds(lpst, cont, GLP_FX, 0.0, 0.0);
+
         }
 
         //printf("%lf%s ",distancias[cont-1],var);
@@ -237,8 +214,8 @@ int steiner(void){
       }
       else{
          glp_set_obj_coef(lpst, cont, 99999);
-         std::string s(var);
-         variaveis.push_back(s);
+         glp_set_col_bnds(lpst, cont, GLP_FX, 0.0, 0.0);
+
       }
       //printf("%lf%s ",distancias[cont-1],var);
       numBinarias++;
@@ -247,12 +224,33 @@ int steiner(void){
     }
   }
 
-  printf("\n\n VARIAVEIS ELIMINADAS\n");
-
-  for(int i=0;i<variaveis.size();i++){
-    cout << variaveis[i] << endl;
-  }
   printf("***************\n\n");
+
+  //-----------------------------------------------------------------------------
+
+    //criação das linhas (restrições)
+    numRestricoes = numPontos+numSteiner;
+    glp_add_rows(lpst, numRestricoes);
+
+    //linhas referentes as restrições de pontos fixos
+    for (i = 1; i <= numPontos; i++) {
+      strcpy(var,"p");
+      gcvt(i,10,lixo);
+      strcat(var,lixo);
+      glp_set_row_name(lpst, i, var);
+      glp_set_row_bnds(lpst, i, GLP_FX, 1.0, 1.0);
+
+    }
+    //linhas referentes as restrições de pontos de Steiner
+    for (i = 1; i <= numSteiner; i++) {
+      strcpy(var,"q");
+      gcvt(i+numPontos,10,lixo);
+      strcat(var,lixo);
+      glp_set_row_name(lpst, i+numPontos, var);
+      glp_set_row_bnds(lpst, i+numPontos, GLP_FX, 3.0, 3.0);
+
+    }
+  //---------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
   //tamanho do vetor da matriz a seguir
@@ -374,10 +372,20 @@ int steiner(void){
     }
   }
 
+  /**********/
+  glp_iocp parm;
+  glp_init_iocp(&parm);
+  parm.mir_cuts=GLP_ON;
+  parm.gmi_cuts=GLP_ON;
+  parm.cov_cuts=GLP_ON;
+  parm.clq_cuts=GLP_ON;
+  parm.presolve=GLP_ON;
+  /**********/
   glp_write_lp(lpst,NULL,"teste-steiner.lp");
   glp_load_matrix(lpst, tamVetor-1, ia, ja, ar);
   glp_simplex(lpst,NULL);
-  glp_intopt(lpst,NULL);
+  //glp_intopt(lpst,NULL);
+  glp_intopt(lpst,&parm);
 
   //tamanho da árvore
   Z = glp_mip_obj_val(lpst);
