@@ -1,6 +1,6 @@
 ############################# Makefile ##########################
-main: main.c steiner.h vetorja.h #load.h
-	g++ -o main main.c -lglpk -lm -W -Wall
+main: main.cpp steiner.h vetorja.h #load.h
+	g++ -o main main.cpp -lglpk -lm -W -Wall
 clean:
 	rm -rf *.o
 mrproper: clean

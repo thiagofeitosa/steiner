@@ -1,12 +1,15 @@
 #ifndef _H_STEINER
 #define _H_STEINER
 
-#include <glpk.h>
+#include "glpk.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include "vetorja.h"
+
+#include <exception>
+#include <iostream>
 
 //comparar float
 #define EPS 1e-4
@@ -15,30 +18,29 @@
 // COMP(7.000001, 7) == 0
 // COMP(7, 8) == -1
 
-int steiner(void){
-  //declaração de variáveis utilizadas em todas as partes do problema
-  int i,j,k, escolha=0, cont, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
-  float distancia;
-  char var[100]; char lixo[50];
-  double Z;
+int numPontos, numDim, numSteiner;
+FILE *entradafixo, *saidafixo;
 
-  //abre arquivo para leitura
-  FILE *entradafixo, *entradasteiner, *saidafixo, *saidasteiner, *edges;
-  entradafixo = fopen("fixos.txt","r");
-  entradasteiner= fopen("steiner.txt","r");
-  saidafixo = fopen("gnuplot/ptfixos.dat","w");
-  saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
-  edges = fopen("gnuplot/edges.dat","w");
+//criação de matriz das coordenadas dos pontos fixos a partir de arquivo
+float **coordenadaFixo;
 
-  //carrega o numero de pontos fixos e dimensões
-  fscanf(entradafixo, "%d %d", &numPontos, &numDim);
-  numSteiner=numPontos-2;
-  float distancias[numPontos*numSteiner*2];
-  //criação de matriz das coordenadas dos pontos fixos a partir de arquivo
-  float coordenadaFixo[numPontos][numDim];
+void load(void){
+   entradafixo = fopen("fixos.txt","r");
 
-  for ( i=1; i<=numPontos; i++ ){
-    for ( j=1; j<=numDim; j++ )
+
+   saidafixo = fopen("gnuplot/ptfixos.dat","w");
+
+   //carrega o numero de pontos fixos e dimensões
+   fscanf(entradafixo, "%d %d", &numPontos, &numDim);
+   numSteiner=numPontos-2;
+
+   coordenadaFixo = new float*[numPontos+1];
+   for(int i = 0; i <= numPontos; i++) {
+      coordenadaFixo[i] = new float[numDim+1];
+   }
+
+   for ( int i=1; i<=numPontos; i++ ){
+    for ( int j=1; j<=numDim; j++ )
     {
       fscanf (entradafixo, "%f", &coordenadaFixo[i][j]);
       fprintf(saidafixo, "%f ", coordenadaFixo[i][j]);
@@ -52,78 +54,94 @@ int steiner(void){
     printf("\nespaço pertencente ao R%d\n\n", numDim);
 
     printf("matriz de coordenadas dos pontos fixos no R%d\n", numDim);
-    for (i=1; i<=numPontos; i++) {
-      for (j=1; j<=numDim; j++) {
+    for (int i=1; i<=numPontos; i++) {
+      for (int j=1; j<=numDim; j++) {
         printf("%f ", coordenadaFixo[i][j]);
       }
       printf("\n");
     }
     printf("\n");
+}
+
+void loadSteiner(double **coordSteiner, int carregaSteiner){
+    if(carregaSteiner==1){
+    	FILE *entradasteiner, *saidasteiner;
+      entradasteiner= fopen("steiner.txt","r");
+      saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
+      int cont=0;
+      for (int i=0; i<numSteiner; i++ ){
+        for (int j=0; j<numDim; j++ ){
+          double dado;
+          fscanf (entradasteiner, "%lf", &dado);
+          (*coordSteiner)[cont]=dado;
+          fprintf(saidasteiner, "%lf ", (*coordSteiner)[cont]);
+          cont++;
+        }
+      fprintf(saidasteiner, "\n");
+      }
+      fclose(entradasteiner);
+      fclose(saidasteiner);
+   }
+
+}
+
+void mostraSteiner(double *coordSteiner){
+	int c=0;
+	for (int i=0; i<numSteiner; i++ ){
+		printf("\n");
+      for (int j=0; j<numDim; j++ ){
+        printf(" %lf",coordSteiner[c+j]);
+		}
+		c=c+numDim;
+   }
+   printf("\n\n");
+}
+
+double steiner(double *coordSteiner){
+  //declaração de variáveis utilizadas em todas as partes do problema
+  int i,j,k, escolha=0, cont; //, numPontos, numDim, numSteiner,numRestricoes, numBinarias,numBinariaSteiner;
+  int numRestricoes, numBinarias,numBinariaSteiner;
+  float distancia;
+  char var[100]; char lixo[50];
+  double Z;
+
+  //abre arquivo para leitura
+  //FILE *entradafixo, *entradasteiner, *saidafixo, *saidasteiner, *edges;
+
+  FILE *edges;
+  edges = fopen("gnuplot/edges.dat","w");
+
+  /***********
+  FILE *entradasteiner, *saidasteiner, *edges;
+
+  entradasteiner= fopen("steiner.txt","r");
+  saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
+  edges = fopen("gnuplot/edges.dat","w");
+  ***********/
+
+  float distancias[numPontos*numSteiner*2];
 
   //leitura de coordenadas dos pontos de steiner
   // printf("digite 1 para ler coordena dos Pontos de Steiner do arquivo e 2 para inserir manualmente:\n" );
   // while (escolha!=1 and escolha!=2) {
   //   scanf("%d", &escolha);
   // }
-  escolha=1;
 
-  float coordenadaSteiner[numSteiner][numDim];
-
-  if (escolha==1) {
-    for ( i=1; i<=numSteiner; i++ ){
-      for ( j=1; j<=numDim; j++ )
-      {
-        fscanf (entradasteiner, "%f", &coordenadaSteiner[i][j]);
-        fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
-      }
-      fprintf(saidasteiner, "\n");
-    }
-      fclose(entradasteiner);
-      fclose(saidasteiner);
-  }else{
-    printf("digite as %d coordenadas dos pontos de steiner:\n", numDim);
-    for ( i=1; i<=numSteiner; i++ ){
-      printf("coordenadas do %dº ponto de steiner:\n",i);
-      for ( j=1; j<=numDim; j++ )
-      {
-        if (j==1) {
-          printf("coordenada x: ");
-        }else if (j==2){
-          printf("coordenada y: ");
-        }else if(j==3){
-          printf("coordenada z: ");
-        }
-        scanf ("%f", &coordenadaSteiner[i][j]);
-        fprintf(saidasteiner, "%f ", coordenadaSteiner[i][j]);
-      }
-      fprintf(saidasteiner, "\n");
-    }
-    fclose(saidasteiner);
-
-    printf("\n\n");
-  }
-
-  //impressão de matriz das coordenadas dos pontos steiner
-  printf("matriz das coordenadas dos pontos de Steiner\n" );
-  for (i=1; i<=numSteiner; i++) {
-    for (j=1; j<=numDim; j++) {
-      printf("%f ", coordenadaSteiner[i][j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-
-  //calculo das distancias euclideanas de todos os pontos fixos para steiner
+  /**********CODIGO NOVO****************/
+  //calculo das distancias euclidianas de todos os pontos fixos para steiner
   float maiordfixos = 0;
   cont=0;
-  for (i=1; i<=numPontos; i++) {
-    for (j=1; j<=numSteiner; j++) {
+
+  for (int i=1; i<=numPontos; i++) {
+  	int c=0;
+    for (int j=0; j<numSteiner; j++) {
       distancia=0;
-      for (k=1; k<=numDim; k++) {
-         distancia=distancia+pow(coordenadaFixo[i][k]-coordenadaSteiner[j][k],2);
+      for (int k=0; k<numDim; k++) {
+      	 distancia=distancia+pow(coordenadaFixo[i][k+1]-coordSteiner[c+k],2);
       }
+      c=c+numDim;
       distancia=sqrt(distancia);
-      printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+numPontos,distancia);
+      printf("distancia euclideana de pt fixo %i para pt Steiner %i: %f\n", i,j+1+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
       if (COMP(distancia, maiordfixos) == 1) {
@@ -135,22 +153,27 @@ int steiner(void){
 
   //calculo das distancias euclideanas de todos os pontos de steiner entre si
   float maiordsteiner=0;
-  for (i=1; i<numSteiner; i++) {
-    for (j=i+1; j<=numSteiner; j++) {
-      distancia=0;
-      for (k=1; k<=numDim; k++) {
-         distancia=distancia+pow(coordenadaSteiner[i][k]-coordenadaSteiner[j][k],2);
-      }
-      distancia=sqrt(distancia);
-      //printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+numPontos,j+numPontos,distancia);
+  int c=0;
+  for(int i=0;i<numSteiner-1;i++){
+  	int d=c+numDim;
+  	for(int j=i+1;j<numSteiner;j++){
+  	  distancia=0;
+  	  for(int k=0;k<numDim;k++){
+  	  	  distancia=distancia+pow(coordSteiner[c+k]-coordSteiner[d+k],2);
+	  }
+	  d=d+numDim;
+	  distancia=sqrt(distancia);
+      printf("distancia euclideana de pt steiner %i para pt Steiner %i: %f\n", i+1+numPontos,j+1+numPontos,distancia);
       distancias[cont]=distancia;
       cont++;
       if (COMP(distancia, maiordsteiner) == 1) {
         maiordsteiner=distancia;
       }
-    }
+	}
+	c=c+numDim;
   }
   printf("maiordsteiner = %f\n", maiordsteiner);
+  /******FIM CODIGO NOVO****************/
 
 
 //---------------------OTIMIZAÇÃO DA ÁRVORE----------------------------------
@@ -158,8 +181,12 @@ int steiner(void){
   //criaçãp do problema, nome e tipo
   glp_prob *lpst;
   lpst = glp_create_prob();
+
   glp_set_prob_name(lpst, "steiner");
+
   glp_set_obj_dir(lpst, GLP_MIN);
+
+
 
   //----------------------------------------------------------------------------//
 
@@ -195,6 +222,8 @@ int steiner(void){
         cont++;
     }
   }
+
+
 
   //criações das variáveis das ligações de pontos Steiner para Steiner com distancia
   numBinariaSteiner=0;
@@ -372,6 +401,8 @@ int steiner(void){
     }
   }
 
+try{
+
   /**********/
   glp_iocp parm;
   glp_init_iocp(&parm);
@@ -380,6 +411,8 @@ int steiner(void){
   parm.cov_cuts=GLP_ON;
   parm.clq_cuts=GLP_ON;
   parm.presolve=GLP_ON;
+
+  cout << "passou0" << endl;
   /**********/
   glp_write_lp(lpst,NULL,"teste-steiner.lp");
   glp_load_matrix(lpst, tamVetor-1, ia, ja, ar);
@@ -387,8 +420,12 @@ int steiner(void){
   //glp_intopt(lpst,NULL);
   glp_intopt(lpst,&parm);
 
+   cout << "passou1" << endl;
+
   //tamanho da árvore
   Z = glp_mip_obj_val(lpst);
+
+  cout << "passou2" << endl;
 
   //imprime o tamanho da árvore e os valores das variáveis binarias correspondentes as ligações
 
@@ -405,10 +442,16 @@ int steiner(void){
 
   //finaliza o problema
   glp_delete_prob(lpst);
+}
+//catch(...){
+catch(exception& e){
 
+	printf("\nErro!!!\n\n");
+	cout << "erro=" << e.what() << endl;
+}
   //system("gnuplot plota.gnu");
 
-  return 0;
+  return Z;
 }
 
 #endif
