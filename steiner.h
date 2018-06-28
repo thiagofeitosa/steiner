@@ -18,11 +18,26 @@
 // COMP(7.000001, 7) == 0
 // COMP(7, 8) == -1
 
+//esse é o vetor de soluções, cada ponto contém numDim coordenadas - por exemplo com 2 pontos de steiner com as coordenadas (5,3) e (5,6) ficaria
+//coordSteiner[0]=5;coordSteiner[1]=3;coordSteiner[2]=5;coordSteiner[3]=6;
+double *coordSteiner;
+
+//vetor com os LB e UB de cada ponto de steiner
+double *vetLB, *vetUB;
+
+
 int numPontos, numDim, numSteiner;
 FILE *entradafixo, *saidafixo;
 
 //criaÃ§Ã£o de matriz das coordenadas dos pontos fixos a partir de arquivo
 float **coordenadaFixo;
+
+void initvariables()
+{
+	coordSteiner = new double[numSteiner*numDim]; //esse é o vetor de solucao que vai determinar os pontos de Steiner
+    vetLB = new double[numSteiner*numDim];
+    vetUB = new double[numSteiner*numDim];
+}
 
 void load(void){
    entradafixo = fopen("fixos.txt","r");
@@ -61,26 +76,88 @@ void load(void){
       printf("\n");
     }
     printf("\n");
+
+
+
+
+}
+
+void loadvetLBUB(double **vetLB, double **vetUB){
+		
+	
+	for(int i=1; i<=numDim; i++){
+	   int min,max; 	
+	   for(int j=1; j<=numPontos; j++){
+	       if(j==1){
+      	   max=min=coordenadaFixo[j][i];	 
+		 }
+		 else{
+		 	if(coordenadaFixo[j][i]>max){
+		 	  max=coordenadaFixo[j][i]; 	
+			}
+			if(coordenadaFixo[j][i]<min){
+		 	  max=coordenadaFixo[j][i]; 	
+			}
+		 }	
+	   }
+	   (*vetLB)[i-1]=min;
+	   (*vetUB)[i-1]=max;	
+	}
+	
+	for(int i=numDim;i<numSteiner*numDim;i++){
+		(*vetLB)[i]=(*vetLB)[i%numDim];
+		(*vetUB)[i]=(*vetUB)[i%numDim];
+	}
+	
+}
+
+void mostravetLBUB(double *vetLB, double *vetUB){
+	printf("\n\nVETOR LB\n");
+	for(int i=0;i<numSteiner*numDim; i++){
+	   printf(" %lf",vetLB[i]);	
+	}
+	printf("\n\nVETOR UB\n");
+	for(int i=0;i<numSteiner*numDim; i++){
+	   printf(" %lf",vetUB[i]);	
+	}
+	
+	printf("\n***************\n");
 }
 
 void loadSteiner(double **coordSteiner, int carregaSteiner){
+
+
     if(carregaSteiner==1){
+
+
+
     	FILE *entradasteiner, *saidasteiner;
-      entradasteiner= fopen("steiner.txt","r");
-      saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
-      int cont=0;
-      for (int i=0; i<numSteiner; i++ ){
-        for (int j=0; j<numDim; j++ ){
-          double dado;
-          fscanf (entradasteiner, "%lf", &dado);
-          (*coordSteiner)[cont]=dado;
-          fprintf(saidasteiner, "%lf ", (*coordSteiner)[cont]);
-          cont++;
-        }
-      fprintf(saidasteiner, "\n");
-      }
-      fclose(entradasteiner);
-      fclose(saidasteiner);
+
+        entradasteiner= fopen("steiner.txt","r");
+        saidasteiner = fopen("gnuplot/ptsteiner.dat","w");
+
+
+
+        int cont=0;
+        for (int i=0; i<numSteiner; i++ ){
+          for (int j=0; j<numDim; j++ )
+          {
+          	 double dado;
+             fscanf (entradasteiner, "%lf", &dado);
+             (*coordSteiner)[cont]=dado;
+
+
+             fprintf(saidasteiner, "%lf ", (*coordSteiner)[cont]);
+             cont++;
+          }
+          fprintf(saidasteiner, "\n");
+
+
+       }
+       fclose(entradasteiner);
+       fclose(saidasteiner);
+
+
    }
 
 }
@@ -88,12 +165,14 @@ void loadSteiner(double **coordSteiner, int carregaSteiner){
 void mostraSteiner(double *coordSteiner){
 	int c=0;
 	for (int i=0; i<numSteiner; i++ ){
-		printf("\n");
-      for (int j=0; j<numDim; j++ ){
-        printf(" %lf",coordSteiner[c+j]);
+		  printf("\n");
+          for (int j=0; j<numDim; j++ ){
+          	 printf(" %lf",coordSteiner[c+j]);
+
 		}
 		c=c+numDim;
    }
+
    printf("\n\n");
 }
 
@@ -127,8 +206,11 @@ double steiner(double *coordSteiner){
   //   scanf("%d", &escolha);
   // }
 
+
+
+
   /**********CODIGO NOVO****************/
-  //calculo das distancias euclidianas de todos os pontos fixos para steiner
+  //calculo das distancias euclideanas de todos os pontos fixos para steiner
   float maiordfixos = 0;
   cont=0;
 
