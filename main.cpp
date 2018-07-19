@@ -3,19 +3,19 @@
 
 int main(void) {
   load(); //le os dados dos pontos fixos e inicializa as principais variaveis do programa
-    
-  //inicializa as variaveis coordSteiner, vetLB e vetUB - deve ser executado sempre após o procedimento load()
-  initvariables(); 
-  
-  loadvetLBUB(&vetLB,&vetUB); //carrega LB e UB de cada dimensão
-  
-  mostravetLBUB(vetLB, vetUB); //mostra os dados de vetLB e vetUB - no BRKGA não precisa
-  
-  loadSteiner(&coordSteiner, 1); //isso é pra carregar os pontos de Steiner de um arquivo - no BRKGA não precisa
-  
-  mostraSteiner(coordSteiner); //isso é pra mostrar se o vetor está carregado direito - no BRKGA não precisa
-  //steiner é o código que executa a formulação para as coordenadas dos pontos de Steiner(coordSteiner) e retorna o tamanho da árvore
-  double tamTree=steiner(coordSteiner); 
-  printf("\n\nTamanho da árvore=%lf",tamTree); 
+
+  //inicializa as variaveis coordSteiner, vetLB e vetUB - deve ser executado sempre apï¿½s o procedimento load()
+  initvariables();
+
+  loadvetLBUB(&vetLB,&vetUB); //carrega LB e UB de cada dimensï¿½o
+
+  mostravetLBUB(vetLB, vetUB); //mostra os dados de vetLB e vetUB - no BRKGA nï¿½o precisa
+
+  loadSteiner(&coordSteiner, 1); //isso ï¿½ pra carregar os pontos de Steiner de um arquivo - no BRKGA nï¿½o precisa
+
+  mostraSteiner(coordSteiner); //isso ï¿½ pra mostrar se o vetor estï¿½ carregado direito - no BRKGA nï¿½o precisa
+  //steiner ï¿½ o cï¿½digo que executa a formulaï¿½ï¿½o para as coordenadas dos pontos de Steiner(coordSteiner) e retorna o tamanho da ï¿½rvore
+  double tamTree=steiner(coordSteiner, 1);
+  printf("\n\nTamanho da Ã¡rvore=%lf",tamTree);
   return 0;
 }

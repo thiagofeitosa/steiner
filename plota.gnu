@@ -4,12 +4,12 @@ set style arrow 1 nohead lw 4
 set autoscale
 set nokey
 
-numPontos=1
+numPontos=7
 
 plot "gnuplot/edges.dat" using 1:2:($3-$1):($4-$2) with vectors arrowstyle 1,\
-"gnuplot/ptfixos.dat" u 1:2:(0.05) with circles fill solid lc rgb "black" notitle,\
+"gnuplot/ptfixos.dat" u 1:2:(0.2) with circles fill solid lc rgb "black" notitle,\
 "gnuplot/ptfixos.dat" using 1:2:($0+1) with labels tc rgb "white" offset (0,0) font 'Arial Bold' notitle,\
-"gnuplot/ptsteiner.dat" u 1:2:(0.05) with circles fill solid lc rgb "red" notitle,\
-"gnuplot/ptsteiner.dat" using 1:2:($0+numPontos) with labels tc rgb "white" offset (0,0) font 'Arial Bold' notitle,
+"gnuplot/ptsteiner.dat" u 1:2:(0.2) with circles fill solid lc rgb "red" notitle,\
+"gnuplot/ptsteiner.dat" using 1:2:($0+numPontos+1) with labels tc rgb "white" offset (0,0) font 'Arial Bold' notitle,
 
 pause -1

@@ -1,7 +1,7 @@
 #ifndef _H_VETORJA
 #define _H_VETORJA
 
-#include <iostream>
+//#include <iostream>
 #include <vector>
 
 using namespace std;
